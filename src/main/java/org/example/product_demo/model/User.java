@@ -1,8 +1,9 @@
 package org.example.product_demo.model;
 
 import jakarta.persistence.*;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -25,6 +26,9 @@ public class User implements UserDetails {
     private String email;
     private boolean enabled = true;
 
+    @Enumerated(EnumType.STRING)
+    private UserRole role = UserRole.USER;
+
     // Default constructor
     public User() {}
 
@@ -33,6 +37,14 @@ public class User implements UserDetails {
         this.username = username;
         this.password = password;
         this.email = email;
+    }
+
+    // Constructor with role
+    public User(String username, String password, String email, UserRole role) {
+        this.username = username;
+        this.password = password;
+        this.email = email;
+        this.role = role;
     }
 
     // Getters and setters
@@ -50,10 +62,17 @@ public class User implements UserDetails {
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
 
+    public UserRole getRole() { return role; }
+    public void setRole(UserRole role) { this.role = role; }
+
+    public boolean isAdmin() { return role == UserRole.ADMIN; }
+
     // UserDetails implementation
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority("ROLE_" + role.name()));
+        return authorities;
     }
 
     @Override

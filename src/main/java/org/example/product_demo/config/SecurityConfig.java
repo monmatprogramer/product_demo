@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -17,6 +18,7 @@ import java.util.logging.Logger;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity // Enable @PreAuthorize annotations
 public class SecurityConfig {
 
     private static final Logger logger = Logger.getLogger(SecurityConfig.class.getName());
@@ -37,6 +39,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/debug/**").permitAll()
                         .requestMatchers("/api/products/**").permitAll()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN") // Secure admin endpoints
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.disable())
@@ -58,6 +61,4 @@ public class SecurityConfig {
         provider.setPasswordEncoder(passwordEncoder);
         return new ProviderManager(Collections.singletonList(provider));
     }
-
-    // Remove the passwordEncoder bean from here
 }

@@ -1,7 +1,13 @@
 package org.example.product_demo.service;
 
+import org.example.product_demo.exception.ApiException;
+import org.example.product_demo.exception.ResourceNotFoundException;
+import org.example.product_demo.exception.UserAlreadyExistsException;
+import org.example.product_demo.exception.InvalidPasswordException;
 import org.example.product_demo.model.User;
+import org.example.product_demo.model.UserRole;
 import org.example.product_demo.repository.UserRepository;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -9,6 +15,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.logging.Logger;
 
 @Service
@@ -38,19 +45,43 @@ public class UserService implements UserDetailsService {
         return user;
     }
 
-    public User registerNewUser(User user) {
+    public User registerNewUser(User user) throws UserAlreadyExistsException {
         if (userRepository.existsByUsername(user.getUsername())) {
-            throw new RuntimeException("Username already exists");
+            throw new UserAlreadyExistsException("Username already exists");
         }
 
         if (user.getEmail() != null && !user.getEmail().isEmpty() && userRepository.existsByEmail(user.getEmail())) {
-            throw new RuntimeException("Email already in use");
+            throw new UserAlreadyExistsException("Email already in use");
         }
+
+        // Default role is USER for self-registration
+        user.setRole(UserRole.USER);
 
         // Encode the password before saving
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         logger.info("Registering new user: " + user.getUsername());
         return userRepository.save(user);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public User createUserByAdmin(User user) throws UserAlreadyExistsException {
+        if (userRepository.existsByUsername(user.getUsername())) {
+            throw new UserAlreadyExistsException("Username already exists");
+        }
+
+        if (user.getEmail() != null && !user.getEmail().isEmpty() && userRepository.existsByEmail(user.getEmail())) {
+            throw new UserAlreadyExistsException("Email already in use");
+        }
+
+        // Encode the password before saving
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        logger.info("Admin creating new user: " + user.getUsername() + " with role: " + user.getRole());
+        return userRepository.save(user);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
     }
 
     public boolean validateCredentials(String username, String rawPassword) {

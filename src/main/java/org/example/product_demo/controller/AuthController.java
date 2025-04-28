@@ -1,5 +1,6 @@
 package org.example.product_demo.controller;
 
+import org.example.product_demo.exception.UserAlreadyExistsException;
 import org.example.product_demo.model.User;
 import org.example.product_demo.service.UserService;
 import org.springframework.http.HttpStatus;
@@ -88,6 +89,8 @@ public class AuthController {
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest()
                     .body(Map.of("error", e.getMessage()));
+        } catch (UserAlreadyExistsException e) {
+            throw new RuntimeException(e);
         }
     }
 
