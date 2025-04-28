@@ -54,6 +54,11 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody User user) {
         try {
+            // Make sure to set email to a default value if not provided
+            if (user.getEmail() == null) {
+                user.setEmail("");
+            }
+
             User registeredUser = userService.registerNewUser(user);
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(Map.of(
@@ -70,7 +75,6 @@ public class AuthController {
     public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> request) {
         String email = request.get("email");
         // Implement password reset logic here
-        // This would typically involve generating a token and sending an email
 
         return ResponseEntity.ok(Map.of("message", "Password reset email sent"));
     }
