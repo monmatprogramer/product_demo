@@ -1,5 +1,6 @@
 package org.example.product_demo.config;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -31,28 +32,57 @@ public class SecurityConfig {
         this.passwordEncoder = passwordEncoder;
     }
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/debug/**").permitAll()
-                        .requestMatchers("/api/products/**").permitAll()
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN") // Secure admin endpoints
-                        .anyRequest().authenticated()
-                )
-                .formLogin(form -> form.disable())
-                .httpBasic(httpBasic -> {})
-                .logout(logout -> logout
-                        .logoutRequestMatcher(new AntPathRequestMatcher("/api/auth/logout"))
-                        .logoutSuccessHandler((request, response, authentication) -> {
-                            response.setStatus(200);
-                        })
-                );
+//    @Bean
+//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+//        http
+//                .csrf(csrf -> csrf.disable())
+//                .authorizeHttpRequests(auth -> auth
+//                        .requestMatchers("/api/auth/**").permitAll()
+//                        .requestMatchers("/api/debug/**").permitAll()
+//                        .requestMatchers("/api/products/**").permitAll()
+//                        .requestMatchers("/api/admin/**").hasRole("ADMIN") // Secure admin endpoints
+//                        .anyRequest().authenticated()
+//                )
+//                .formLogin(form -> form.disable())
+//                .httpBasic(httpBasic -> {})
+//                .logout(logout -> logout
+//                        .logoutRequestMatcher(new AntPathRequestMatcher("/api/auth/logout"))
+//                        .logoutSuccessHandler((request, response, authentication) -> {
+//                            response.setStatus(200);
+//                        })
+//                );
+//
+//        return http.build();
+//    }
+@Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http
+            .csrf(csrf -> csrf.disable())
+            .authorizeHttpRequests(auth -> auth
+                    .requestMatchers("/api/auth/**").permitAll()
+                    .requestMatchers("/api/debug/**").permitAll()
+                    .requestMatchers("/api/products/**").permitAll()
+                    .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                    .anyRequest().authenticated()
+            )
+            .formLogin(form -> form.disable())
+            .httpBasic(httpBasic -> httpBasic.authenticationEntryPoint(
+                    (request, response, authException) -> {
+                        // Return 401 without WWW-Authenticate header to prevent browser dialog
+                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        response.setContentType("application/json");
+                        response.getWriter().write("{\"error\":\"Unauthorized\"}");
+                    }
+            ))
+            .logout(logout -> logout
+                    .logoutRequestMatcher(new AntPathRequestMatcher("/api/auth/logout"))
+                    .logoutSuccessHandler((request, response, authentication) -> {
+                        response.setStatus(200);
+                    })
+            );
 
-        return http.build();
-    }
+    return http.build();
+}
 
     @Bean
     public AuthenticationManager authenticationManager() {

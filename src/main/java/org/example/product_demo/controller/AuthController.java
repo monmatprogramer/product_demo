@@ -31,47 +31,85 @@ public class AuthController {
         this.authenticationManager = authenticationManager;
         this.userService = userService;
     }
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
-        logger.info("Login attempt for user: " + loginRequest.getUsername());
+//    @PostMapping("/login")
+//    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+//        logger.info("Login attempt for user: " + loginRequest.getUsername());
+//
+//        try {
+//            // First, try to find the user
+//            UserDetails userDetails = userService.loadUserByUsername(loginRequest.getUsername());
+//
+//            // Then attempt authentication
+//            Authentication authentication = authenticationManager.authenticate(
+//                    new UsernamePasswordAuthenticationToken(
+//                            loginRequest.getUsername(),
+//                            loginRequest.getPassword()
+//                    )
+//            );
+//
+//            SecurityContextHolder.getContext().setAuthentication(authentication);
+//
+//            logger.info("Login successful for user: " + loginRequest.getUsername());
+//
+//            // Create response
+//            Map<String, Object> response = new HashMap<>();
+//            response.put("message", "Login successful");
+//            response.put("username", loginRequest.getUsername());
+//
+//            return ResponseEntity.ok(response);
+//        } catch (BadCredentialsException e) {
+//            logger.warning("Bad credentials for user: " + loginRequest.getUsername());
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+//                    .body(Map.of("error", "Invalid username or password"));
+//        } catch (AuthenticationException e) {
+//            logger.warning("Authentication exception: " + e.getMessage());
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+//                    .body(Map.of("error", "Authentication failed: " + e.getMessage()));
+//        } catch (Exception e) {
+//            logger.severe("Unexpected error during login: " + e.getMessage());
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+//                    .body(Map.of("error", "An unexpected error occurred"));
+//        }
+//    }
+@PostMapping("/login")
+public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+    logger.info("Login attempt for user: " + loginRequest.getUsername());
 
-        try {
-            // First, try to find the user
-            UserDetails userDetails = userService.loadUserByUsername(loginRequest.getUsername());
+    try {
+        // This is the part that needs to be fixed
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        loginRequest.getUsername(),
+                        loginRequest.getPassword()
+                )
+        );
 
-            // Then attempt authentication
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            loginRequest.getUsername(),
-                            loginRequest.getPassword()
-                    )
-            );
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+        logger.info("Login successful for user: " + loginRequest.getUsername());
 
-            logger.info("Login successful for user: " + loginRequest.getUsername());
+        // Create response
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Login successful");
+        response.put("username", loginRequest.getUsername());
 
-            // Create response
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "Login successful");
-            response.put("username", loginRequest.getUsername());
+        // Optionally, you can add user role info here
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        boolean isAdmin = userDetails.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        response.put("role", isAdmin ? "ADMIN" : "USER");
 
-            return ResponseEntity.ok(response);
-        } catch (BadCredentialsException e) {
-            logger.warning("Bad credentials for user: " + loginRequest.getUsername());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "Invalid username or password"));
-        } catch (AuthenticationException e) {
-            logger.warning("Authentication exception: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "Authentication failed: " + e.getMessage()));
-        } catch (Exception e) {
-            logger.severe("Unexpected error during login: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "An unexpected error occurred"));
-        }
+        return ResponseEntity.ok(response);
+    } catch (BadCredentialsException e) {
+        logger.warning("Bad credentials for user: " + loginRequest.getUsername());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("error", "Invalid username or password"));
+    } catch (Exception e) {
+        logger.severe("Unexpected error during login: " + e.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "An unexpected error occurred: " + e.getMessage()));
     }
-
+}
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody User user) {
         try {
