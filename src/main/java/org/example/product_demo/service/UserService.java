@@ -3,7 +3,6 @@ package org.example.product_demo.service;
 import org.example.product_demo.exception.ApiException;
 import org.example.product_demo.exception.ResourceNotFoundException;
 import org.example.product_demo.exception.UserAlreadyExistsException;
-import org.example.product_demo.exception.InvalidPasswordException;
 import org.example.product_demo.model.User;
 import org.example.product_demo.model.UserRole;
 import org.example.product_demo.repository.UserRepository;
@@ -82,6 +81,55 @@ public class UserService implements UserDetailsService {
     @PreAuthorize("hasRole('ADMIN')")
     public List<User> getAllUsers() {
         return userRepository.findAll();
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public User getUserById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public User updateUser(Long id, String username, String email, String password, UserRole role) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+
+        // Check if the new username is already taken by another user
+        if (username != null && !user.getUsername().equals(username) && userRepository.existsByUsername(username)) {
+            throw new UserAlreadyExistsException("Username already exists");
+        }
+
+        // Check if the new email is already taken by another user
+        if (email != null && !email.isEmpty() && !email.equals(user.getEmail())
+                && userRepository.existsByEmail(email)) {
+            throw new UserAlreadyExistsException("Email already in use");
+        }
+
+        if (username != null) {
+            user.setUsername(username);
+        }
+
+        if (email != null) {
+            user.setEmail(email);
+        }
+
+        if (password != null && !password.isEmpty()) {
+            user.setPassword(passwordEncoder.encode(password));
+        }
+
+        user.setRole(role);
+
+        logger.info("Updating user: " + user.getId() + " with role: " + role);
+        return userRepository.save(user);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public void deleteUser(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new ResourceNotFoundException("User not found with id: " + id);
+        }
+        userRepository.deleteById(id);
+        logger.info("Deleted user with id: " + id);
     }
 
     public boolean validateCredentials(String username, String rawPassword) {
