@@ -11,7 +11,8 @@ public class CorsConfig implements WebMvcConfigurer {
         registry.addMapping("/**")
                 .allowedOrigins(
                     "https://master.d2ji8l5dbhz3ww.amplifyapp.com",  // Your Amplify app URL
-                    "http://localhost:3000"  // For local development
+                    "http://localhost:3000",
+                    "https://master.d2ji8l5dbhz3ww.amplifyapp.com"  // For local development
                 )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
