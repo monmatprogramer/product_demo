@@ -1,0 +1,1 @@
+web: java -Dserver.port=5000 -Dspring.profiles.active=prod -jar target/product_demo-0.0.1-SNAPSHOT.jar
