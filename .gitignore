@@ -42,3 +42,5 @@ build/
 # ignore the default and prod application.properties
 /src/main/resources/application.properties
 /src/main/resources/application-prod.properties
+
+.app-deploy.zip
