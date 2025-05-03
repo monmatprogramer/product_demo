@@ -43,4 +43,5 @@ build/
 /src/main/resources/application.properties
 /src/main/resources/application-prod.properties
 
-.app-deploy.zip
+# ignore our deployment bundle
+/app-deploy.zip
