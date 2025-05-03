@@ -52,6 +52,11 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/", "/index.html", "/static/**").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
+                        .requestMatchers("/health").permitAll()
+                        .requestMatchers("/test").permitAll()
+                        .requestMatchers("/testdb").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/debug/**").permitAll()
                         .requestMatchers("/api/products/**").permitAll()

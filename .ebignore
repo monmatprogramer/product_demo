@@ -1,0 +1,9 @@
+# ignore everything
+*
+
+# except the EB metadata and platform hooks
+!.elasticbeanstalk/**
+!.platform/**
+
+# and except your freshly built Spring Boot JAR
+!target/*.jar
