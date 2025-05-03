@@ -2,6 +2,7 @@ package org.example.product_demo.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
@@ -9,31 +10,48 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.logging.Logger;
 
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
+    
+    private static final Logger logger = Logger.getLogger(CorsConfig.class.getName());
 
-    // This will handle CORS for Spring MVC endpoints
     @Override
     public void addCorsMappings(CorsRegistry registry) {
+        logger.info("Configuring CORS mappings with permissive settings...");
         registry.addMapping("/**")
-                .allowedOriginPatterns("*") // Allow all origins temporarily to diagnose
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedOrigins("*")  // Allow all origins during development
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD")
                 .allowedHeaders("*")
-                .allowCredentials(true);
+                .maxAge(3600);
     }
 
-    // This will handle CORS for all requests, including non-Spring MVC endpoints
     @Bean
+    @Primary
     public CorsFilter corsFilter() {
-        final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        final CorsConfiguration config = new CorsConfiguration();
+        logger.info("Creating CORS filter with permissive settings...");
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration config = new CorsConfiguration();
         
-        config.setAllowCredentials(true);
-        config.setAllowedOriginPatterns(Collections.singletonList("*")); // Allow all origins temporarily
-        config.setAllowedHeaders(Arrays.asList("Origin", "Content-Type", "Accept", "Authorization"));
-        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        // Allow all origins - this is intentionally permissive for development
+        config.addAllowedOrigin("*");
+        
+        // Allow all methods
+        config.addAllowedMethod("*");
+        
+        // Allow all headers
+        config.addAllowedHeader("*");
+        
+        // Expose headers to client
+        config.setExposedHeaders(Arrays.asList(
+            "Authorization", "Content-Type", "Content-Length", "Content-Disposition",
+            "Access-Control-Allow-Origin", "Access-Control-Allow-Methods", 
+            "Access-Control-Allow-Headers", "Access-Control-Allow-Credentials"
+        ));
+        
+        // Cache preflight for 1 hour
+        config.setMaxAge(3600L);
         
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);
