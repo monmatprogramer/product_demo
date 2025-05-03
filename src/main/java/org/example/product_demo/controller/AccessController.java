@@ -14,7 +14,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/access")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = {"https://master.d2ji8l5dbhz3ww.amplifyapp.com", "http://localhost:3000"})
 public class AccessController {
 
     private final JwtUtils jwtUtils;

@@ -16,7 +16,7 @@ import java.util.logging.Logger;
 
 @RestController
 @RequestMapping("/api/admin/users")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = {"https://master.d2ji8l5dbhz3ww.amplifyapp.com", "http://localhost:3000"})
 @PreAuthorize("hasRole('ADMIN')")  // Class-level security
 public class UserAdminController {
 
@@ -27,6 +27,9 @@ public class UserAdminController {
         this.userService = userService;
     }
 
+    // Rest of the controller methods unchanged...
+    // Only the @CrossOrigin annotation was updated
+    
     @GetMapping
     public ResponseEntity<List<User>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());

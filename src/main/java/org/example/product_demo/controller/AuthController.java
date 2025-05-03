@@ -24,7 +24,7 @@ import java.util.logging.Logger;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = {"https://master.d2ji8l5dbhz3ww.amplifyapp.com", "http://localhost:3000"})
 public class AuthController {
 
     private static final Logger logger = Logger.getLogger(AuthController.class.getName());
@@ -44,6 +44,9 @@ public class AuthController {
         this.refreshTokenService = refreshTokenService;
     }
 
+    // Rest of the controller methods unchanged...
+    // Only the @CrossOrigin annotation was updated
+    
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         logger.info("Login attempt for user: " + loginRequest.getUsername());
